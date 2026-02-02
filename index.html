@@ -222,10 +222,11 @@ sha512: { name: 'SHA-512', bits: 512, fn: CryptoJS.SHA512, color: '--accent' },
 'sha3-512': { name: 'SHA3-512', bits: 512, fn: (data) => CryptoJS.SHA3(data, { outputLength: 512 }), color: '--accent2' }
 };
 
-// Initialize
-init();
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', init);
 
 function init() {
+console.log('Initializing HashFlow...'); // Debug
 // Tab switching
 tabBtns.forEach(btn => {
 btn.addEventListener('click', () => switchTab(btn.dataset.tab));
@@ -246,7 +247,11 @@ fileInput.addEventListener('change', handleFileSelect);
 
 // Algorithm selection
 algoBtns.forEach(btn => {
-btn.addEventListener('click', () => toggleAlgorithm(btn.dataset.algo));
+btn.addEventListener('click', (e) => {
+e.preventDefault();
+console.log('Clicked algorithm:', btn.dataset.algo); // Debug
+toggleAlgorithm(btn.dataset.algo);
+});
 });
 
 // Hash comparison
@@ -313,11 +318,18 @@ reader.readAsArrayBuffer(file);
 }
 
 function toggleAlgorithm(algo) {
+console.log('Toggle algorithm called:', algo);
 const btn = document.querySelector(`[data-algo="${algo}"]`);
+if (!btn) {
+console.error('Algorithm button not found:', algo);
+return;
+}
+
 const isActive = btn.classList.contains('active');
+console.log('Is active:', isActive, 'Current active:', activeAlgorithms);
 
 if (isActive) {
-if (activeAlgorithms.length === 1) {
+if (activeAlgorithms.length <= 1) {
 showToast('At least one algorithm must be selected');
 return;
 }
@@ -325,9 +337,12 @@ btn.classList.remove('active');
 activeAlgorithms = activeAlgorithms.filter(a => a !== algo);
 } else {
 btn.classList.add('active');
+if (!activeAlgorithms.includes(algo)) {
 activeAlgorithms.push(algo);
 }
+}
 
+console.log('New active algorithms:', activeAlgorithms);
 generateHashes();
 }
 
